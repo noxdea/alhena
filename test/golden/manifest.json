@@ -1,0 +1,98 @@
+[
+  {
+    "font": "DejaVuSans.ttf",
+    "size": 14,
+    "glyph": 54,
+    "image": "DejaVuSans-14.png",
+    "left": 0,
+    "top": 11
+  },
+  {
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "glyph": 54,
+    "image": "DejaVuSans-24.png",
+    "left": 1,
+    "top": 18
+  },
+  {
+    "font": "DejaVuSans.ttf",
+    "size": 48,
+    "glyph": 54,
+    "image": "DejaVuSans-48.png",
+    "left": 3,
+    "top": 36
+  },
+  {
+    "font": "NotoSans-Regular.ttf",
+    "size": 14,
+    "glyph": 54,
+    "image": "NotoSans-Regular-14.png",
+    "left": 0,
+    "top": 11
+  },
+  {
+    "font": "NotoSans-Regular.ttf",
+    "size": 24,
+    "glyph": 54,
+    "image": "NotoSans-Regular-24.png",
+    "left": 1,
+    "top": 18
+  },
+  {
+    "font": "NotoSans-Regular.ttf",
+    "size": 48,
+    "glyph": 54,
+    "image": "NotoSans-Regular-48.png",
+    "left": 2,
+    "top": 35
+  },
+  {
+    "font": "SourceSans3-Regular.otf",
+    "size": 14,
+    "glyph": 20,
+    "image": "SourceSans3-Regular-14.png",
+    "left": 0,
+    "top": 10
+  },
+  {
+    "font": "SourceSans3-Regular.otf",
+    "size": 24,
+    "glyph": 20,
+    "image": "SourceSans3-Regular-24.png",
+    "left": 1,
+    "top": 17
+  },
+  {
+    "font": "SourceSans3-Regular.otf",
+    "size": 48,
+    "glyph": 20,
+    "image": "SourceSans3-Regular-48.png",
+    "left": 2,
+    "top": 33
+  },
+  {
+    "font": "SourceHanSansJP-Regular.otf",
+    "size": 14,
+    "glyph": 14534,
+    "image": "SourceHanSansJP-Regular-14.png",
+    "left": 0,
+    "top": 12
+  },
+  {
+    "font": "SourceHanSansJP-Regular.otf",
+    "size": 24,
+    "glyph": 14534,
+    "image": "SourceHanSansJP-Regular-24.png",
+    "left": 0,
+    "top": 21
+  },
+  {
+    "font": "SourceHanSansJP-Regular.otf",
+    "size": 48,
+    "glyph": 14534,
+    "image": "SourceHanSansJP-Regular-48.png",
+    "left": 1,
+    "top": 41
+  }
+]

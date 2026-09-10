@@ -1,0 +1,117 @@
+module Alhena
+  VERSION: String
+  type matrix = Array[Numeric]
+  class Error < StandardError
+  end
+  class InvalidFont < Error
+  end
+  class UnsupportedFont < Error
+  end
+  class Binary
+    attr_reader data: String
+    attr_accessor position: Integer
+    def initialize: (String data) -> void
+    def size: () -> Integer
+    def bytes: (Integer offset, Integer length) -> String
+    def validate_bounds: (Integer offset, Integer length) -> void
+    def check: (Integer offset, Integer length) -> void
+    def u8: (?Integer? offset) -> Integer
+    def i8: (?Integer? offset) -> Integer
+    def u16: (?Integer? offset) -> Integer
+    def i16: (?Integer? offset) -> Integer
+    def u24: (?Integer? offset) -> Integer
+    def u32: (?Integer? offset) -> Integer
+    def i32: (?Integer? offset) -> Integer
+    def fixed: (?Integer? offset) -> Float
+  end
+  class Outline
+    attr_reader commands: Array[Symbol]
+    attr_reader coordinates: Array[Float]
+    def initialize: () -> void
+    def move_to: (Numeric x, Numeric y) -> self
+    def line_to: (Numeric x, Numeric y) -> self
+    def quad_to: (Numeric cx, Numeric cy, Numeric x, Numeric y) -> self
+    def cubic_to: (Numeric c1x, Numeric c1y, Numeric c2x, Numeric c2y, Numeric x, Numeric y) -> self
+    def close: () -> self
+    def empty?: () -> bool
+    def each: () { (Symbol, *Float) -> void } -> self
+            | () -> Enumerator[untyped, self]
+    def transform: (matrix) -> Outline
+    def append: (Outline) -> self
+    def bounds: () -> [Numeric, Numeric, Numeric, Numeric]
+    def to_quadratic: (?tolerance: Numeric) -> Outline
+  end
+  class Bitmap
+    attr_reader width: Integer
+    attr_reader height: Integer
+    attr_reader left: Integer
+    attr_reader top: Integer
+    attr_reader coverage: String
+    attr_reader channels: Integer
+    def initialize: (width: Integer, height: Integer, coverage: String, ?left: Integer, ?top: Integer, ?channels: Integer) -> void
+    def to_ascii: (?ramp: String) -> String
+  end
+  class Font
+    attr_reader index: Integer
+    attr_reader tables: Hash[String, [Integer, Integer]]
+    attr_reader axis_values: Hash[String, Numeric]
+    def data: () -> String
+    def self.open: (String path, ?index: Integer, ?axes: Hash[String | Symbol, Numeric]) -> Font
+    def initialize: (String data, ?index: Integer, ?axes: Hash[String | Symbol, Numeric]) -> void
+    def table: (String tag) -> Binary
+    def units_per_em: () -> Integer
+    def glyph_count: () -> Integer
+    def ascent: () -> Integer
+    def descent: () -> Integer
+    def line_gap: () -> Integer
+    def names: () -> Hash[Integer, String]
+    def family: () -> String?
+    def os2: () -> Hash[Symbol, Integer]
+    def post: () -> Hash[Symbol, Numeric | bool]
+    def glyph_id: (String | Integer character, ?variation_selector: String | Integer | nil) -> Integer
+    def advance: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
+    def bearing: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
+    def outline: (Integer glyph) -> Outline
+    def axes: () -> Hash[String, Hash[Symbol, Numeric | bool | String | nil]]
+    def variation: (Hash[String | Symbol, Numeric]) -> Font
+    def normalized_coordinates: () -> Array[Float]
+    def palettes: () -> Array[Array[Array[Integer]]]
+    def color_layers: (Integer glyph) -> Array[[Integer, Integer]]?
+    def color_bitmap: (Integer glyph, size: Numeric, ?palette: Integer, ?foreground: Array[Integer], ?subpixel_x: Numeric) -> ColorBitmap?
+    def embedded_bitmap: (Integer glyph, size: Numeric) -> EmbeddedBitmap?
+    def rasterize: (Integer glyph, size: Numeric, ?subpixel_x: Numeric, ?tolerance: Numeric, ?gamma: Numeric, ?darkening: Numeric, ?lcd: :rgb | :bgr | nil) -> Bitmap
+  end
+  class ColorBitmap
+    attr_reader width: Integer
+    attr_reader height: Integer
+    attr_reader left: Integer
+    attr_reader top: Integer
+    attr_reader rgba: String
+    def initialize: (width: Integer, height: Integer, rgba: String, ?left: Integer, ?top: Integer) -> void
+    def to_bitmap: () -> Bitmap
+    def resize: (Numeric factor) -> ColorBitmap
+  end
+  class EmbeddedBitmap < Data
+    attr_reader format: Symbol
+    attr_reader data: String
+    attr_reader ppem: Integer
+    attr_reader left: Integer
+    attr_reader top: Integer?
+    attr_reader width: Integer?
+    attr_reader height: Integer?
+  end
+  class Rasterizer
+    MAX_PIXELS: Integer
+    def initialize: (width: Integer, height: Integer, ?tolerance: Numeric) -> void
+    def fill: (Outline, ?transform: matrix?, ?left: Integer, ?top: Integer, ?gamma: Numeric, ?darkening: Numeric, ?lcd: :rgb | :bgr | nil) -> Bitmap
+  end
+  class Cache
+    attr_reader capacity: Integer
+    attr_reader bytesize: Integer
+    def initialize: (?capacity: Integer, ?max_bytes: Integer?) -> void
+    def size: () -> Integer
+    def rasterize: (Font font, Integer glyph, size: Numeric, ?subpixel_x: Numeric, **untyped options) -> Bitmap
+    def prewarm: (Font font, String text, ?Numeric? size, **untyped options) -> self
+    def clear: () -> self
+  end
+end
