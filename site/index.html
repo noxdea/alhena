@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#020617">
+    <meta name="description" content="Pure Ruby TrueType, OpenType, and TTC font rasterization with antialiased glyph bitmaps.">
+    <link rel="canonical" href="https://noxdea.github.io/alhena/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23020617%22/><path d=%22M32 8l5 19 19 5-19 5-5 19-5-19-19-5 19-5z%22 fill=%22%2338bdf8%22/></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <title>Alhena — Pure Ruby font rasterization</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header shell">
+      <a class="wordmark" href="./" aria-label="Alhena home">
+        <span aria-hidden="true">✦</span>
+        Alhena
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#features">Features</a>
+        <a href="#formats">Formats</a>
+        <a href="https://github.com/noxdea/alhena">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero shell">
+        <div class="hero-copy">
+          <h1>Font outlines in. Pixels out. Pure Ruby.</h1>
+          <p>
+            Read TrueType, OpenType, and TTC files, extract their outlines,
+            and render antialiased grayscale, LCD, or color glyph bitmaps—
+            without native extensions.
+          </p>
+          <div class="install-command" aria-label="Install Alhena">
+            <span aria-hidden="true">$</span>
+            <code>gem install alhena</code>
+          </div>
+          <div class="hero-actions">
+            <a class="button" href="https://rubygems.org/gems/alhena">View on RubyGems</a>
+            <a class="text-link" href="https://github.com/noxdea/alhena#quick-start">Read the docs</a>
+          </div>
+        </div>
+
+        <figure class="specimen">
+          <figcaption>
+            <span>Rendered coverage</span>
+            <span class="specimen-data">Noto Sans · S · 48 px</span>
+          </figcaption>
+          <div class="specimen-stage">
+            <span class="axis axis-x" aria-hidden="true"></span>
+            <span class="axis axis-y" aria-hidden="true"></span>
+            <img
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAkCAAAAABHr/5/AAABxElEQVR4nGNigADNzCkb9mxfNavURwzMZwIRzAmXrk3L9nf2CE3t2vziQrMSRFzh2HxdBjhg1K+5Iw8SVzpuxoAKzj4EirOslwAy3/d6KAhKanhVbf3GwLAYZE6SHlD4sEbJzocfXtzc3u4jHLRxBUg8Hij8wvcV3JAf6wOAHCZWEyB7xkc0GxiYhNlAFqELMzD9B7sNU/wdSEIJU/z3dSAZgynOsBNImlRgik/5C6Tap3Cii99rAdHZN7M4UcUZmhaAGLJTn3Sro4j/S6z4BWIKldzYF8qCEGdg6DTeBeE5rrqfzIwQZ7jibrP6N5glM+eyNUKcgeFomEzJVTBL82A2kjgDw6teHfstIAbzlDhkcSA45Gt5EURPk0YVZ2A4Yb4OSHLnoosz/Ix5BCR9McQZvs8GEuosGOIMl0BW82GKfwIRXzHFVYD4/U9M8SggPsnAJIEWtzmOQGINA1PJ/TYbFrgof98kIHlrCdCd8pWH3x6YlB3l7RlWse55IVD7z5SfEPfz2edOWbpl28r2QFCcffM9DAyf7+j27jHYDSSZau0mX/wHF3w73871NojBxHA4z4BX1y+1oLI4JVBZJOkwRAEA8qOFXk7i2swAAAAASUVORK5CYII="
+              alt="The letter S rendered as a 23 by 36 pixel grayscale coverage bitmap by Alhena"
+              width="23"
+              height="36"
+            >
+          </div>
+          <dl class="specimen-metrics">
+            <div><dt>Width</dt><dd>23 px</dd></div>
+            <div><dt>Height</dt><dd>36 px</dd></div>
+            <div><dt>Channels</dt><dd>R8</dd></div>
+          </dl>
+        </figure>
+      </section>
+
+      <section class="pipeline shell" aria-labelledby="pipeline-title">
+        <h2 id="pipeline-title">One path from font table to bitmap.</h2>
+        <ol>
+          <li><span>1</span>Parse tables</li>
+          <li><span>2</span>Resolve glyph</li>
+          <li><span>3</span>Build outline</li>
+          <li><span>4</span>Rasterize coverage</li>
+        </ol>
+      </section>
+
+      <section class="section shell" id="features">
+        <div class="section-heading">
+          <h2>The rendering layer Ruby was missing.</h2>
+          <p>
+            Alhena keeps the path from raw font bytes to immutable bitmap
+            coverage inside one dependency-free Ruby library.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <h3>Analytic rasterization</h3>
+            <p>Grayscale and RGB/BGR LCD coverage with gamma, darkening, and subpixel positioning.</p>
+          </article>
+          <article>
+            <h3>Variable fonts</h3>
+            <p>Inspect axes and render persistent instances across fvar, gvar, avar, HVAR, and VVAR data.</p>
+          </article>
+          <article>
+            <h3>Color glyphs</h3>
+            <p>Render COLR/CPAL layers and embedded sbix or CBDT/CBLC bitmap strikes.</p>
+          </article>
+          <article>
+            <h3>Bounded by design</h3>
+            <p>Lazy table parsing, checked reads, immutable output, and entry- or byte-bounded LRU caching.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section code-section shell" aria-labelledby="code-title">
+        <div class="section-heading">
+          <h2 id="code-title">A glyph bitmap in six lines.</h2>
+          <p>The API exposes the useful result without hiding outlines, metrics, or raw table data.</p>
+        </div>
+        <pre><code><span class="code-keyword">require</span> <span class="code-string">"alhena"</span>
+
+font = Alhena::Font.open(<span class="code-string">"NotoSans-Regular.ttf"</span>)
+glyph = font.glyph_id(<span class="code-string">"A"</span>)
+bitmap = font.rasterize(glyph, size: <span class="code-number">24</span>)
+
+puts bitmap.to_ascii</code></pre>
+      </section>
+
+      <section class="section shell" id="formats">
+        <div class="section-heading">
+          <h2>Broad font support, explicit limits.</h2>
+          <p>Supported paths are documented precisely. Unsupported structures fail with typed errors.</p>
+        </div>
+        <dl class="format-list">
+          <div><dt>Containers</dt><dd>TrueType, OpenType CFF1/CFF2, TTC</dd></div>
+          <div><dt>Unicode maps</dt><dd>cmap 0, 4, 6, 12, 13, 14</dd></div>
+          <div><dt>Variation</dt><dd>fvar, gvar, avar v1, HVAR, VVAR</dd></div>
+          <div><dt>Color</dt><dd>COLR/CPAL v0, sbix PNG, CBDT/CBLC</dd></div>
+        </dl>
+        <p class="limits">
+          Shaping, hinting, kerning, and system font discovery stay outside
+          Alhena’s scope. Pair it with the specialist tool your application needs.
+        </p>
+      </section>
+
+      <section class="section performance shell" aria-labelledby="performance-title">
+        <div class="section-heading">
+          <h2 id="performance-title">Measured, not promised.</h2>
+          <p>Median local measurements on Ruby 4.0 with YJIT on arm64-darwin24.</p>
+        </div>
+        <dl class="benchmark-list">
+          <div><dt>Open Noto Sans</dt><dd>64.73 µs</dd></div>
+          <div><dt>Rasterize A at 14 px</dt><dd>40.11 µs</dd></div>
+          <div><dt>Cached glyph hit</dt><dd>0.48 µs</dd></div>
+          <div><dt>Prewarm 95 ASCII glyphs</dt><dd>4.79 ms</dd></div>
+        </dl>
+      </section>
+
+      <section class="closing shell">
+        <h2>Render your first glyph.</h2>
+        <div class="install-command" aria-label="Install Alhena">
+          <span aria-hidden="true">$</span>
+          <code>gem install alhena</code>
+        </div>
+        <a class="button" href="https://github.com/noxdea/alhena#quick-start">Start with the README</a>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <p>Alhena <span class="version">v0.1.0</span></p>
+      <p>Pure Ruby. MIT licensed.</p>
+    </footer>
+  </body>
+</html>
