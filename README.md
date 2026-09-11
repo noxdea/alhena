@@ -16,12 +16,12 @@
   <a href="#quick-start">Quick Start</a> ·
   <a href="#usage">Usage</a> ·
   <a href="#supported-formats">Supported Formats</a> ·
-  <a href="#development">Development</a>
+  <a href="#performance">Performance</a>
 </p>
 
 ---
 
-Alhena reads TrueType, OpenType, and TTC fonts, extracts their outlines, and rasterizes antialiased grayscale, LCD, and color glyph bitmaps. It requires Ruby 3.1+ and has no runtime gem dependencies or native extensions.
+Alhena reads TrueType, OpenType, and TTC fonts, extracts their outlines, and rasterizes antialiased grayscale, LCD, and color glyph bitmaps. It has no runtime gem dependencies or native extensions.
 
 ## Features
 
@@ -52,6 +52,10 @@ Or install it directly:
 ```sh
 gem install alhena
 ```
+
+### Requirements
+
+- Ruby 3.1 or later
 
 ## Quick Start
 
