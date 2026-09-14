@@ -13,8 +13,14 @@ namespace :test do
   end
   task(:fuzz) { ruby "test/fuzz.rb" }
 end
-task(:bench) { ruby "--yjit", "bench/bench.rb" }
+task(:bench) do
+  ruby "--yjit", "bench/bench.rb"
+  ruby "--yjit", "bench/downsample.rb"
+end
 namespace :bench do
-  task(:assert) { ruby "--yjit", "bench/bench.rb", "--assert" }
+  task(:assert) do
+    ruby "--yjit", "bench/bench.rb", "--assert"
+    ruby "--yjit", "bench/downsample.rb", "--assert"
+  end
 end
 task default: :test

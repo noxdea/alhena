@@ -28,6 +28,8 @@ Alhena reads TrueType, OpenType, and TTC fonts, extracts their outlines, and ras
 - TrueType, OpenType CFF1/CFF2, and TTC font parsing
 - Analytic grayscale and LCD rasterization with subpixel positioning
 - Variable font axes, outlines, and metrics
+- Fast text advance measurement without rasterization
+- Low-resolution ink distribution rendering for minimaps
 - COLR/CPAL, sbix, and CBDT/CBLC color glyphs
 - Entry- and byte-bounded LRU glyph cache
 - Lazy, bounds-checked table parsing
@@ -76,6 +78,17 @@ puts bitmap.to_ascii
 advance = font.advance(glyph, size: 24)
 ```
 
+Measure a UTF-8 string without rasterizing its glyphs:
+
+```ruby
+metrics = font.measure("Inline hint", size: 14)
+width = font.advance_width("Inline hint".codepoints, size: 14)
+```
+
+`Metrics` contains the scaled `width`, `ascent`, `descent`, and `line_gap`.
+OpenType shaping is outside Alhena's scope, so non-empty `features:` values raise
+`Alhena::UnsupportedFont`.
+
 ## Usage
 
 ### Fonts and metrics
@@ -96,6 +109,14 @@ bitmap = Alhena::Rasterizer.new(width: 100, height: 100).fill(path)
 ```
 
 `Outline` supports lines, quadratic and cubic curves, transforms, bounds, appending, and cubic-to-quadratic conversion. `Rasterizer#fill` uses pixel coordinates with Y down and implicitly closes open subpaths.
+
+For minimaps, combine already-positioned outlines into a low-resolution coverage
+bitmap without rasterizing each glyph separately:
+
+```ruby
+mini = Alhena::Rasterizer.new(width: 1, height: 1)
+  .fill_downsampled(outlines, scale: 0.05, width: 120, height: 2)
+```
 
 `Font#rasterize` and `Rasterizer#fill` accept `gamma:`, `darkening:`, and `lcd: :rgb` or `:bgr`. Use grayscale when the display subpixel order is unknown.
 
@@ -153,6 +174,7 @@ Measurements below are medians of five batches on Ruby 4.0.0 with YJIT on arm64-
 | A at 14px, cache hit | 0.48 µs | 5 µs |
 | ASCII 95 glyph prewarm | 4.79 ms | 60 ms |
 | 鬱 at 48px, uncached | 0.47 ms | 3 ms |
+| 10,000 downsampled rows | 32.95 ms | 200 ms |
 
 Cache glyphs in interactive applications so each glyph is normally rasterized once per size and position. These measurements are local evidence, not universal guarantees.
 

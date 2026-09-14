@@ -7,6 +7,7 @@ module Alhena
   class Error < StandardError; end
   class InvalidFont < Error; end
   class UnsupportedFont < Error; end
+  Metrics = Struct.new(:width, :ascent, :descent, :line_gap, keyword_init: true)
 end
 
 require_relative "alhena/bitmap"

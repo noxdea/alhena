@@ -1,4 +1,11 @@
 module Alhena
+  class Metrics < Struct[untyped]
+    attr_accessor width: Float
+    attr_accessor ascent: Float
+    attr_accessor descent: Float
+    attr_accessor line_gap: Float
+    def initialize: (?width: Float, ?ascent: Float, ?descent: Float, ?line_gap: Float) -> void
+  end
   VERSION: String
   type matrix = Array[Numeric]
   class Error < StandardError
@@ -70,6 +77,8 @@ module Alhena
     def post: () -> Hash[Symbol, Numeric | bool]
     def glyph_id: (String | Integer character, ?variation_selector: String | Integer | nil) -> Integer
     def advance: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
+    def advance_width: (Array[Integer] codepoints, size: Numeric, ?features: Array[String | Symbol]) -> Float
+    def measure: (String text, size: Numeric, ?features: Array[String | Symbol]) -> Metrics
     def bearing: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
     def outline: (Integer glyph) -> Outline
     def axes: () -> Hash[String, Hash[Symbol, Numeric | bool | String | nil]]
@@ -104,6 +113,7 @@ module Alhena
     MAX_PIXELS: Integer
     def initialize: (width: Integer, height: Integer, ?tolerance: Numeric) -> void
     def fill: (Outline, ?transform: matrix?, ?left: Integer, ?top: Integer, ?gamma: Numeric, ?darkening: Numeric, ?lcd: :rgb | :bgr | nil) -> Bitmap
+    def fill_downsampled: (Enumerable[Outline] outlines, scale: Numeric, width: Integer, height: Integer) -> Bitmap
   end
   class Cache
     attr_reader capacity: Integer

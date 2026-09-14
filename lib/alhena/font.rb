@@ -126,6 +126,23 @@ module Alhena
       cached_metric(glyph, vertical: vertical)[0] * scale_factor(size)
     end
 
+    def advance_width(codepoints, size:, features: [])
+      validate_features(features)
+      raise ArgumentError, "codepoints must be an Array" unless codepoints.is_a?(Array)
+
+      factor = scale_factor(size)
+      codepoints.sum { |codepoint| cached_metric(glyph_id(codepoint), vertical: false)[0] } * factor
+    end
+
+    def measure(text, size:, features: [])
+      valid_text = text.is_a?(String) && text.encoding == Encoding::UTF_8 && text.valid_encoding?
+      raise ArgumentError, "text must be a valid UTF-8 String" unless valid_text
+
+      factor = scale_factor(size)
+      Metrics.new(width: advance_width(text.codepoints, size: size, features: features),
+        ascent: ascent * factor, descent: descent * factor, line_gap: line_gap * factor).freeze
+    end
+
     def bearing(glyph, size: units_per_em, vertical: false)
       cached_metric(glyph, vertical: vertical)[1] * scale_factor(size)
     end
@@ -168,6 +185,11 @@ module Alhena
     def scale_factor(size)
       raise ArgumentError, "size must be positive and finite" unless size.is_a?(Numeric) && size.finite? && size > 0
       size.to_f / units_per_em
+    end
+
+    def validate_features(features)
+      raise ArgumentError, "features must be an Array" unless features.is_a?(Array)
+      raise UnsupportedFont, "OpenType layout features are not supported" unless features.empty?
     end
 
     def validate_glyph(glyph)

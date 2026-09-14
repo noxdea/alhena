@@ -31,6 +31,20 @@ module Alhena
       @area = nil
     end
 
+    def fill_downsampled(outlines, scale:, width:, height:)
+      raise ArgumentError, "scale must be positive and finite" unless scale.is_a?(Numeric) && scale.finite? && scale > 0
+      raise ArgumentError, "outlines must be enumerable" unless outlines.respond_to?(:each)
+
+      combined = Outline.new
+      outlines.each do |outline|
+        raise ArgumentError, "outlines must contain Outline values" unless outline.is_a?(Outline)
+
+        combined.append(outline)
+      end
+      self.class.new(width: width, height: height, tolerance: @tolerance).fill(combined,
+        transform: [scale, 0, 0, scale, 0, 0])
+    end
+
     private
 
     def lcd_bitmap(outline, left:, top:, gamma:, darkening:, order:)

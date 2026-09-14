@@ -7,8 +7,8 @@ Gem::Specification.new do |spec|
   spec.version = Alhena::VERSION
   spec.authors = ["Yudai Takada"]
   spec.email = ["t.yudai92@gmail.com"]
-  spec.summary = "Pure Ruby TrueType and CFF font rasterization"
-  spec.description = "Read sfnt and TTC fonts, extract outlines, and produce antialiased grayscale or LCD glyph bitmaps without native dependencies."
+  spec.summary = "Pure Ruby font rasterization and measurement"
+  spec.description = "Read sfnt and TTC fonts, measure text, extract outlines, and produce antialiased or downsampled glyph bitmaps without native dependencies."
   spec.homepage = "https://github.com/noxdea/alhena"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1"

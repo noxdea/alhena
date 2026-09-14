@@ -22,7 +22,7 @@ def measure(label, count, budget)
   end
   value = times.sort[2]
   puts "%s: %.2f us (budget %.2f us)" % [label, value, budget]
-  abort "#{label} exceeds budget" if ARGV.include?("--assert") && value > budget
+  abort "#{label} exceeds budget" if (ARGV.include?("--assert") || ENV["BUDGET"] == "1") && value > budget
 end
 
 puts "#{RUBY_DESCRIPTION}; YJIT=#{RubyVM::YJIT.enabled?}"
