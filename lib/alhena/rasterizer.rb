@@ -43,7 +43,8 @@ module Alhena
 
         combined.append(outline)
       end
-      target.fill(combined, transform: [scale, 0, 0, scale, 0, 0])
+      combined.coordinates.map! { |coordinate| coordinate * scale } unless scale == 1
+      target.fill(combined)
     end
 
     private
