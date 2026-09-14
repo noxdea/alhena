@@ -9,6 +9,7 @@ class MetricsTest < Minitest::Test
     expected = text.each_char.sum { |character| face.advance(face.glyph_id(character), size: 18) }
 
     assert_in_delta expected, face.advance_width(text.codepoints, size: 18)
+    assert_in_delta face.advance_width(["A".ord], size: 18), face.measure("A\ufe0f", size: 18).width
     metrics = face.measure(text, size: 18)
     assert_in_delta expected, metrics.width
     assert_in_delta face.ascent * 18.0 / face.units_per_em, metrics.ascent

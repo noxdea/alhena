@@ -131,7 +131,12 @@ module Alhena
       raise ArgumentError, "codepoints must be an Array" unless codepoints.is_a?(Array)
 
       factor = scale_factor(size)
-      codepoints.sum { |codepoint| cached_metric(glyph_id(codepoint), vertical: false)[0] } * factor
+      units = codepoints.sum do |codepoint|
+        next 0 if variation_selector?(codepoint)
+
+        cached_metric(glyph_id(codepoint), vertical: false)[0]
+      end
+      units * factor
     end
 
     def measure(text, size:, features: [])
@@ -190,6 +195,10 @@ module Alhena
     def validate_features(features)
       raise ArgumentError, "features must be an Array" unless features.is_a?(Array)
       raise UnsupportedFont, "OpenType layout features are not supported" unless features.empty?
+    end
+
+    def variation_selector?(codepoint)
+      codepoint.is_a?(Integer) && (codepoint.between?(0xfe00, 0xfe0f) || codepoint.between?(0xe0100, 0xe01ef))
     end
 
     def validate_glyph(glyph)
