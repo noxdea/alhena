@@ -7,15 +7,17 @@ on:
       - 'site/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
   deploy:
+    name: Deploy Pages
+    permissions:
+      contents: read # checkout
+      pages: write # deploy the Pages artifact
+      id-token: write # authenticate the Pages deployment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
