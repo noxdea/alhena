@@ -32,17 +32,18 @@ module Alhena
     end
 
     def fill_downsampled(outlines, scale:, width:, height:)
-      raise ArgumentError, "scale must be positive and finite" unless scale.is_a?(Numeric) && scale.finite? && scale > 0
+      valid_scale = scale.is_a?(Numeric) && scale.real? && scale.finite? && scale > 0
+      raise ArgumentError, "scale must be positive and finite" unless valid_scale
       raise ArgumentError, "outlines must be enumerable" unless outlines.respond_to?(:each)
 
+      target = self.class.new(width: width, height: height, tolerance: @tolerance)
       combined = Outline.new
       outlines.each do |outline|
         raise ArgumentError, "outlines must contain Outline values" unless outline.is_a?(Outline)
 
         combined.append(outline)
       end
-      self.class.new(width: width, height: height, tolerance: @tolerance).fill(combined,
-        transform: [scale, 0, 0, scale, 0, 0])
+      target.fill(combined, transform: [scale, 0, 0, scale, 0, 0])
     end
 
     private

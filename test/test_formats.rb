@@ -38,6 +38,9 @@ class FormatTest < Minitest::Test
     assert_equal 99, parsed.glyph_id("B", variation_selector: 0xfe0f)
     assert_equal 0, parsed.glyph_id("C", variation_selector: 0xfe0f)
     assert_equal 0, parsed.glyph_id("A", variation_selector: 0xfe0e)
+    assert_in_delta parsed.advance(36, size: 12), parsed.advance_width(["A".ord, 0xfe0f], size: 12)
+    assert_in_delta parsed.advance(99, size: 12), parsed.advance_width(["B".ord, 0xfe0f], size: 12)
+    assert_in_delta parsed.advance(36, size: 12), parsed.advance_width(["A".ord, 0xfe0e], size: 12)
     3.times do
       assert_equal 36, parsed.glyph_id("A")
       assert_equal 37, parsed.glyph_id("B")

@@ -131,10 +131,13 @@ module Alhena
       raise ArgumentError, "codepoints must be an Array" unless codepoints.is_a?(Array)
 
       factor = scale_factor(size)
-      units = codepoints.sum do |codepoint|
+      units = codepoints.each_with_index.sum do |codepoint, index|
         next 0 if variation_selector?(codepoint)
 
-        cached_metric(glyph_id(codepoint), vertical: false)[0]
+        selector = codepoints[index + 1]
+        glyph = glyph_id(codepoint, variation_selector: variation_selector?(selector) ? selector : nil)
+        glyph = glyph_id(codepoint) if glyph.zero? && variation_selector?(selector)
+        cached_metric(glyph, vertical: false)[0]
       end
       units * factor
     end
@@ -188,7 +191,9 @@ module Alhena
     private
 
     def scale_factor(size)
-      raise ArgumentError, "size must be positive and finite" unless size.is_a?(Numeric) && size.finite? && size > 0
+      valid = size.is_a?(Numeric) && size.real? && size.finite? && size > 0
+      raise ArgumentError, "size must be positive and finite" unless valid
+
       size.to_f / units_per_em
     end
 
