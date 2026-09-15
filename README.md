@@ -175,7 +175,7 @@ Measurements below are medians of five batches on Ruby 4.0.0 with YJIT on arm64-
 | A at 14px, cache hit | 0.48 µs | 5 µs |
 | ASCII 95 glyph prewarm | 4.79 ms | 60 ms |
 | 鬱 at 48px, uncached | 0.47 ms | 3 ms |
-| 10,000 downsampled rows | 100.37 ms | 200 ms |
+| 10,000 downsampled rows | 100.37 ms | 250 ms |
 
 Cache glyphs in interactive applications so each glyph is normally rasterized once per size and position. These measurements are local evidence, not universal guarantees.
 

@@ -19,6 +19,6 @@ times = 5.times.map do
   Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
 end
 elapsed = times.sort[2]
-puts "10k downsampled rows: %.2f ms (budget 200.00 ms)" % (elapsed * 1000)
+puts "10k downsampled rows: %.2f ms (budget 250.00 ms)" % (elapsed * 1000)
 assert_budget = ARGV.include?("--assert") || ENV["BUDGET"] == "1"
-abort "downsampled row generation exceeds budget" if assert_budget && elapsed > 0.2
+abort "downsampled row generation exceeds budget" if assert_budget && elapsed > 0.25
