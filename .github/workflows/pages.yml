@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 permissions: {}
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   deploy:
     name: Deploy Pages
