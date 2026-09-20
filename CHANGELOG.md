@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a deterministic rasterized-glyph demo image and regeneration task.
+
 ## 0.2.0 — 2026-09-15
 
 - Added text advance and line metric measurement without rasterization.

@@ -23,6 +23,8 @@
 
 Alhena reads TrueType, OpenType, and TTC fonts, extracts their outlines, and rasterizes antialiased grayscale, LCD, and color glyph bitmaps. It has no runtime gem dependencies or native extensions.
 
+![Alhena rasterized glyphs](docs/media/screenshot.png)
+
 ## Features
 
 - TrueType, OpenType CFF1/CFF2, and TTC font parsing
