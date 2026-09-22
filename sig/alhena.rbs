@@ -62,12 +62,18 @@ module Alhena
     attr_reader index: Integer
     attr_reader tables: Hash[String, [Integer, Integer]]
     attr_reader axis_values: Hash[String, Numeric]
+    attr_reader sfnt_signature: String
     def data: () -> String
     def self.open: (String path, ?index: Integer, ?axes: Hash[String | Symbol, Numeric]) -> Font
     def initialize: (String data, ?index: Integer, ?axes: Hash[String | Symbol, Numeric]) -> void
     def table: (String tag) -> Binary
     def units_per_em: () -> Integer
     def glyph_count: () -> Integer
+    def bbox: () -> [Integer, Integer, Integer, Integer]
+    def cff?: () -> bool
+    def glyph_ids: (String) -> Array[Integer]
+    def cmap: () -> Hash[Integer, Integer]
+    def unicode_for_glyph: (Integer) -> Integer?
     def ascent: () -> Integer
     def descent: () -> Integer
     def line_gap: () -> Integer
@@ -77,7 +83,8 @@ module Alhena
     def post: () -> Hash[Symbol, Numeric | bool]
     def glyph_id: (String | Integer character, ?variation_selector: String | Integer | nil) -> Integer
     def advance: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
-    def advance_width: (Array[Integer] codepoints, size: Numeric, ?features: Array[String | Symbol]) -> Float
+    def advance_width: (Integer glyph_id, ?size: Numeric) -> Float
+                      | (Array[Integer] codepoints, size: Numeric, ?features: Array[String | Symbol]) -> Float
     def measure: (String text, size: Numeric, ?features: Array[String | Symbol]) -> Metrics
     def bearing: (Integer glyph, ?size: Numeric, ?vertical: bool) -> Float
     def outline: (Integer glyph) -> Outline
@@ -123,5 +130,8 @@ module Alhena
     def rasterize: (Font font, Integer glyph, size: Numeric, ?subpixel_x: Numeric, **untyped options) -> Bitmap
     def prewarm: (Font font, String text, ?Numeric? size, **untyped options) -> self
     def clear: () -> self
+  end
+  module Subset
+    def self.build: (Font, Array[Integer]) -> String
   end
 end

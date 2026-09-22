@@ -5,7 +5,7 @@ module Alhena
   class Font
     LOOKUP_CACHE_SIZE = 4096
     private_constant :LOOKUP_CACHE_SIZE
-    attr_reader :index, :tables, :axis_values
+    attr_reader :index, :tables, :axis_values, :sfnt_signature
 
     # @param path [String] sfnt, OpenType or TTC filename
     # @param index [Integer] zero-based collection face
@@ -29,6 +29,7 @@ module Alhena
       end
       signature = @binary.bytes(offset, 4)
       raise UnsupportedFont, "expected sfnt, OpenType or TTC" unless ["\x00\x01\x00\x00".b, "OTTO", "true"].include?(signature)
+      @sfnt_signature = signature.freeze
       count = @binary.u16(offset + 4)
       @binary.validate_bounds(offset + 12, count * 16)
       @tables = {}
@@ -64,6 +65,36 @@ module Alhena
     def ascent = table("hhea").i16(4)
     def descent = table("hhea").i16(6)
     def line_gap = table("hhea").i16(8)
+    def bbox = 4.times.map { |index| table("head").i16(36 + index * 2) }.freeze
+    def cff? = @tables.key?("CFF ") || @tables.key?("CFF2")
+
+    def glyph_ids(text)
+      raise ArgumentError, "text must be a String" unless text.is_a?(String)
+
+      codepoints = text.codepoints
+      codepoints.each_with_index.filter_map do |codepoint, index|
+        next if variation_selector?(codepoint)
+
+        selector = codepoints[index + 1]
+        glyph_id(codepoint, variation_selector: variation_selector?(selector) ? selector : nil)
+      end
+    end
+
+    # Unicode codepoint => glyph ID. `glyph_id` remains the bounded lookup API;
+    # this map is useful when a consumer needs a stable reverse mapping.
+    def cmap
+      @cmap ||= begin
+        result = {}
+        cmaps.each { |data| add_cmap_entries(result, data) }
+        result.freeze
+      end
+    end
+
+    def unicode_for_glyph(glyph)
+      validate_glyph(glyph)
+      @unicode_cmap ||= cmap.each_with_object({}) { |(codepoint, id), reverse| reverse[id] ||= codepoint }.freeze
+      @unicode_cmap[glyph]
+    end
 
     def names
       @names ||= begin
@@ -126,7 +157,11 @@ module Alhena
       cached_metric(glyph, vertical: vertical)[0] * scale_factor(size)
     end
 
-    def advance_width(codepoints, size:, features: [])
+    def advance_width(codepoints, size: nil, features: [])
+      if codepoints.is_a?(Integer)
+        return cached_metric(codepoints, vertical: false)[0] * scale_factor(size || units_per_em)
+      end
+      raise ArgumentError, "size is required" unless size
       validate_features(features)
       raise ArgumentError, "codepoints must be an Array" unless codepoints.is_a?(Array)
 
@@ -189,6 +224,45 @@ module Alhena
     end
 
     private
+
+    def add_cmap_entries(result, data)
+      format = data.u16(0)
+      case format
+      when 0
+        256.times { |codepoint| add_cmap_entry(result, codepoint, glyph_id_from_cmap(data, codepoint)) }
+      when 4
+        count = data.u16(6) / 2
+        count.times do |index|
+          first = data.u16(16 + count * 2 + index * 2)
+          last = data.u16(14 + index * 2)
+          next if first == 0xffff || last == 0xffff
+
+          first.upto(last) { |codepoint| add_cmap_entry(result, codepoint, glyph_id_from_cmap(data, codepoint)) }
+        end
+      when 6
+        first, count = data.u16(6), data.u16(8)
+        count.times { |index| add_cmap_entry(result, first + index, glyph_id_from_cmap(data, first + index)) }
+      when 12, 13
+        count = data.u32(12)
+        data.validate_bounds(16, count * 12)
+        count.times do |index|
+          at = 16 + index * 12
+          first, last, start_glyph = data.u32(at), data.u32(at + 4), data.u32(at + 8)
+          if format == 13
+            add_cmap_entry(result, first, start_glyph)
+            next
+          end
+          [last, first + glyph_count - start_glyph - 1, 0x10ffff].min.downto(first) do |codepoint|
+            glyph = start_glyph + codepoint - first
+            add_cmap_entry(result, codepoint, glyph)
+          end
+        end
+      end
+    end
+
+    def add_cmap_entry(result, codepoint, glyph)
+      result[codepoint] ||= glyph if glyph.positive? && glyph < glyph_count && !(0xd800..0xdfff).cover?(codepoint)
+    end
 
     def scale_factor(size)
       valid = size.is_a?(Numeric) && size.real? && size.finite? && size > 0

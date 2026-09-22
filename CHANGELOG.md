@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 — 2026-09-23
+
+- Expose font bounds, glyph IDs, advances, and Unicode mappings for font consumers.
+- Build self-contained TrueType subsets with composite glyph dependencies and valid checksums.
+- Preserve complete CFF fonts when building PDF-compatible font data.
+
 ## 0.2.1 — 2026-09-21
 
 - Add a deterministic rasterized-glyph demo image and regeneration task.
