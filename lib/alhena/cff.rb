@@ -17,9 +17,11 @@ module Alhena
       else
         names, at = read_index(header_size)
         tops, at = read_index(at)
-        _strings, at = read_index(at)
+        @strings, at = read_index(at)
         @global_subrs, = read_index(at)
         raise InvalidFont, "OpenType CFF must contain one font" unless names.size == 1 && tops.size == 1
+        @name_objects, @top_dictionary = names, tops.first
+        @top_dictionary_entries = dictionary_entries(@top_dictionary)
         @top = parse_dictionary(tops.first)
       end
       raise UnsupportedFont, "only Type 2 charstrings are supported" unless @top.fetch(1206, [2]).first == 2
@@ -28,9 +30,11 @@ module Alhena
       raise InvalidFont, "invalid CFF FontMatrix" unless @matrix.size == 6
       if @top.key?(1230) || @version == 2
         dictionaries, = read_index(@top.fetch(1236).first)
+        @private_records = []
         @privates = dictionaries.map { |entry| read_private_dict(parse_dictionary(entry)) }
         @fd_select = @top[1237]&.first
       else
+        @private_records = []
         @privates = [read_private_dict(@top)]
         @privates.first[3] = nil
       end
@@ -47,6 +51,14 @@ module Alhena
         path = path.transform(matrix)
       end
       path.transform(@matrix.map { |n| n * @units_per_em })
+    end
+
+    # Rebuild a name-keyed CFF1 table with only the requested charstrings.
+    def subset(glyphs)
+      Subsetter.new(glyphs, data: @data, version: @version, top: @top,
+        top_dictionary_entries: @top_dictionary_entries, name_objects: @name_objects,
+        strings: @strings, global_subrs: @global_subrs, charstrings: @charstrings,
+        private_records: @private_records).build
     end
 
     private
@@ -73,7 +85,7 @@ module Alhena
       data, stack, result = Binary.new(bytes), [], {}
       while data.position < data.size
         byte = data.u8
-        if byte >= 32 || [28, 29, 30].include?(byte)
+        if byte >= 32 || [28, 29, 30, 255].include?(byte)
           stack << read_number(data, byte)
           raise InvalidFont, "CFF DICT operand overflow" if stack.length > (@version == 2 ? 513 : 48)
         else
@@ -105,6 +117,7 @@ module Alhena
             raise InvalidFont, "oversized CFF real" if value.size > 64
           end
         end
+      when 255 then data.fixed
       when 32..246 then byte - 139
       when 247..250 then (byte - 247) * 256 + data.u8 + 108
       when 251..254 then -(byte - 251) * 256 - data.u8 - 108
@@ -116,9 +129,30 @@ module Alhena
 
     def read_private_dict(dict)
       length, offset = dict.fetch(18, [0, 0])
-      private_data = parse_dictionary(@data.bytes(offset, length))
+      raw = @data.bytes(offset, length)
+      private_data = parse_dictionary(raw)
       local = private_data.key?(19) ? read_index(offset + private_data[19].first).first : []
+      @private_records << { entries: dictionary_entries(raw), subrs: local } if @version == 1
       [local, private_data.fetch(20, [0]).first, private_data.fetch(21, [0]).first, dict[1207], private_data.fetch(22, [0]).first]
+    end
+
+    def dictionary_entries(bytes)
+      data, operands, entries = Binary.new(bytes), [], []
+      while data.position < data.size
+        start = data.position
+        byte = data.u8
+        if byte >= 32 || [28, 29, 30, 255].include?(byte)
+          value = read_number(data, byte)
+          operands << [bytes.byteslice(start...data.position), value]
+        else
+          operator = byte == 12 ? 1200 + data.u8 : byte
+          entries << [operator, operands]
+          operands = []
+        end
+      end
+      raise InvalidFont, "unterminated CFF DICT operands" unless operands.empty?
+
+      entries
     end
 
     def font_dict_index(glyph)

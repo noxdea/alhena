@@ -14,9 +14,36 @@ module Alhena
         raise ArgumentError, "glyph ID out of range" unless glyph.is_a?(Integer) && glyph.between?(0, font.glyph_count - 1)
       end
 
-      return sfnt(font, font.tables.to_h { |tag, _| [tag, font.table(tag).data] }) if font.cff?
+      return cff(font, glyph_ids) if font.cff?
 
       true_type(font, glyph_ids)
+    end
+
+    def cff(font, glyph_ids)
+      raise UnsupportedFont, "CFF2 subsetting is unsupported" unless font.tables.key?("CFF ") && !font.tables.key?("CFF2")
+      raise UnsupportedFont, "variable CFF1 subsetting is unsupported" if font.tables.key?("fvar") || font.tables.key?("HVAR")
+
+      glyphs = [0, *glyph_ids].uniq.sort
+      remap = glyphs.each_with_index.to_h
+      header = font.table("hhea").data.dup
+      header[34, 2] = [glyphs.length].pack("n")
+      maximum = font.table("maxp").data.dup
+      maximum[4, 2] = [glyphs.length].pack("n")
+      tables = {
+        "CFF " => CFF.new(font.table("CFF "), units_per_em: font.units_per_em).subset(glyphs),
+        "head" => font.table("head").data,
+        "hhea" => header,
+        "hmtx" => metrics(font, glyphs),
+        "maxp" => maximum,
+        "cmap" => unicode_cmap(font, remap)
+      }
+      %w[OS/2 name].each { |tag| tables[tag] = font.table(tag).data if font.tables.key?(tag) }
+      if font.tables.key?("post")
+        post = font.table("post").bytes(0, 32).dup
+        post[0, 4] = [0x0003_0000].pack("N")
+        tables["post"] = post
+      end
+      sfnt(font, tables)
     end
 
     def true_type(font, glyph_ids)
