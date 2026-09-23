@@ -53,6 +53,60 @@ module Alhena
           charstrings_index + private_dictionary + local_subrs_index
       end
 
+      def build_cid
+        raise UnsupportedFont, "CFF CID conversion requires name-keyed CFF1" unless @version == 1 && !@top.key?(1230) && !@top.key?(1236) && !@top.key?(1237)
+        raise ArgumentError, "glyphs must be a nonempty Array" unless @glyphs.is_a?(Array) && !@glyphs.empty?
+        raise ArgumentError, "CFF glyph out of range" unless @glyphs.all? { |glyph| glyph.is_a?(Integer) && glyph.between?(0, @charstrings.length - 1) }
+        raise ArgumentError, "CID 0 must map to glyph 0" unless @glyphs.first.zero?
+        raise ArgumentError, "CID font cannot exceed 65,536 glyphs" if @glyphs.length > 65_536
+
+        private_record = @private_records.first
+        has_local_subrs = private_record && private_record[:entries].any? { |operator, _| operator == 19 }
+        private_dictionary = private_record ? encode_private_dictionary(private_record, has_local_subrs) : "".b
+        local_subrs_index = has_local_subrs ? encode_index(private_record[:subrs]) : "".b
+        charset = [0].pack("C") + (1...@glyphs.length).to_a.pack("n*")
+        charstrings_index = encode_index(@glyphs.map { |glyph| @charstrings.fetch(glyph) })
+        fd_select = "\0".b * (@glyphs.length + 1)
+        header = @data.bytes(0, @data.u8(2))
+        name_index = encode_index(@name_objects)
+        string_index = encode_index(@strings + ["Adobe", "Identity"])
+        global_subrs_index = encode_index(@global_subrs)
+        base_offset = header.bytesize + name_index.bytesize + string_index.bytesize + global_subrs_index.bytesize
+        offsets = Array.new(5, 0)
+
+        16.times do
+          top_index = encode_index([encode_cid_top_dictionary(offsets)])
+          cursor = base_offset + top_index.bytesize
+          charset_offset = cursor
+          cursor += charset.bytesize
+          charstrings_offset = cursor
+          cursor += charstrings_index.bytesize
+          fd_select_offset = cursor
+          cursor += fd_select.bytesize
+          fd_array_offset = cursor
+          fd_dictionary = encode_dictionary([], private_record ? {18 => [private_dictionary.bytesize, offsets[4]]} : {})
+          fd_array = encode_index([fd_dictionary])
+          private_offset = fd_array_offset + fd_array.bytesize
+          current = [charset_offset, charstrings_offset, fd_select_offset, fd_array_offset, private_offset]
+          break if current == offsets
+
+          offsets = current
+        end
+
+        top_index = encode_index([encode_cid_top_dictionary(offsets)])
+        fd_dictionary = encode_dictionary([], private_record ? {18 => [private_dictionary.bytesize, offsets[4]]} : {})
+        fd_array = encode_index([fd_dictionary])
+        charset_offset, charstrings_offset, fd_select_offset, fd_array_offset, private_offset = offsets
+        cursor = base_offset + top_index.bytesize
+        expected = [cursor, cursor + charset.bytesize,
+          cursor + charset.bytesize + charstrings_index.bytesize,
+          cursor + charset.bytesize + charstrings_index.bytesize + fd_select.bytesize]
+        raise InvalidFont, "CFF CID subset offsets did not converge" unless expected == offsets.take(4) && fd_array_offset + fd_array.bytesize == private_offset
+
+        header + name_index + top_index + string_index + global_subrs_index + charset +
+          charstrings_index + fd_select + fd_array + private_dictionary + local_subrs_index
+      end
+
       private
 
       def encode_private_dictionary(record, has_subrs)
@@ -155,6 +209,15 @@ module Alhena
         replacements[18] = [private_size, private_offset] if @top.key?(18)
         replacements[16] = [@top.fetch(16, [0]).first] if @top.key?(16)
         encode_dictionary(@top_dictionary_entries, replacements)
+      end
+
+      def encode_cid_top_dictionary(offsets)
+        charset_offset, charstrings_offset, fd_select_offset, fd_array_offset = offsets
+        entries = @top_dictionary_entries.reject { |operator, _| [15, 16, 17, 18, 1230, 1236, 1237].include?(operator) }
+        ros_registry = 391 + @strings.length
+        replacements = {15 => [charset_offset], 17 => [charstrings_offset],
+          1230 => [ros_registry, ros_registry + 1, 0], 1236 => [fd_array_offset], 1237 => [fd_select_offset]}
+        encode_dictionary(entries, replacements)
       end
     end
   end

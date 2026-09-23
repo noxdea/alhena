@@ -35,6 +35,18 @@ class SubsetTest < Minitest::Test
     assert_equal 0xb1b0afba, checksum(bytes)
   end
 
+  def test_name_keyed_cff_can_be_repacked_as_cid_keyed_in_requested_order
+    source = font("SourceSans3-Regular.otf")
+    glyph = source.glyph_id("A")
+    bytes = Alhena::Subset.build_cid(source, [0, glyph, glyph])
+    subset = Alhena::CFF.new(Alhena::Binary.new(bytes))
+
+    assert_equal source.outline(glyph).commands, subset.outline(1).commands
+    assert_equal source.outline(glyph).commands, subset.outline(2).commands
+    assert_operator bytes.bytesize, :<, source.table("CFF ").size
+    assert_raises(ArgumentError) { Alhena::Subset.build_cid(source, [glyph]) }
+  end
+
   def test_unsupported_cff_variants_are_rejected_instead_of_returning_the_source
     cff2 = font("SourceSerif4Variable-Roman.otf")
     cid = font("SourceHanSansJP-Regular.otf")

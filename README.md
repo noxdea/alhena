@@ -167,6 +167,8 @@ Alhena does not provide TrueType hinting, shaping, GSUB/GPOS, kerning, system fo
 
 `Alhena::Subset.build(font, glyph_ids)` creates a compact TrueType font containing the requested glyphs and any composite-glyph dependencies, or a compact static name-keyed CFF1 font for the supported CFF subset described below. CFF2, CID-keyed CFF, predefined CFF charsets, custom CFF encodings, and variable CFF1 fonts are rejected with `Alhena::UnsupportedFont`; they are never silently returned unchanged. CFF subsets retain selected outlines, Unicode mappings, horizontal metrics, and the original subroutine indexes, but omit layout, shaping, color, and vertical-metric tables whose glyph references are not rewritten.
 
+For PDF consumers, `Alhena::Subset.build_cid(font, glyph_ids)` converts a static, name-keyed CFF1 font to a compact CID-keyed CFF1 program. Array order assigns CIDs (the first glyph must be glyph 0), and repeated glyph IDs are allowed. It intentionally rejects CFF2, variable, and already CID-keyed source fonts.
+
 Unknown formats raise `Alhena::UnsupportedFont`; malformed bounds and structures raise `Alhena::InvalidFont`. Bitmap allocations are limited to 16,777,216 samples.
 
 ## Performance

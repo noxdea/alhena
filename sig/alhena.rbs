@@ -133,5 +133,6 @@ module Alhena
   end
   module Subset
     def self.build: (Font, Array[Integer]) -> String
+    def self.build_cid: (Font, Array[Integer]) -> String
   end
 end

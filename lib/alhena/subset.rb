@@ -19,6 +19,19 @@ module Alhena
       true_type(font, glyph_ids)
     end
 
+    # Returns a CID-keyed CFF1 program with glyph order matching the requested CIDs.
+    # Unlike #build, glyph_ids may repeat; entry zero must be glyph 0 (.notdef).
+    def build_cid(font, glyph_ids)
+      raise ArgumentError, "font must be an Alhena::Font" unless font.is_a?(Font)
+      raise ArgumentError, "glyph_ids must be an Array" unless glyph_ids.is_a?(Array)
+      glyph_ids.each do |glyph|
+        raise ArgumentError, "glyph ID out of range" unless glyph.is_a?(Integer) && glyph.between?(0, font.glyph_count - 1)
+      end
+      raise UnsupportedFont, "CID conversion requires a non-variable CFF1 font" unless font.tables.key?("CFF ") && !font.tables.key?("CFF2") && !font.tables.key?("fvar") && !font.tables.key?("HVAR")
+
+      CFF.new(font.table("CFF "), units_per_em: font.units_per_em).subset_cid(glyph_ids)
+    end
+
     def cff(font, glyph_ids)
       raise UnsupportedFont, "CFF2 subsetting is unsupported" unless font.tables.key?("CFF ") && !font.tables.key?("CFF2")
       raise UnsupportedFont, "variable CFF1 subsetting is unsupported" if font.tables.key?("fvar") || font.tables.key?("HVAR")

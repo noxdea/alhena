@@ -61,6 +61,14 @@ module Alhena
         private_records: @private_records).build
     end
 
+    # Rebuild a single-FD CID-keyed CFF1 program in the requested CID order.
+    def subset_cid(glyphs)
+      Subsetter.new(glyphs, data: @data, version: @version, top: @top,
+        top_dictionary_entries: @top_dictionary_entries, name_objects: @name_objects,
+        strings: @strings, global_subrs: @global_subrs, charstrings: @charstrings,
+        private_records: @private_records).build_cid
+    end
+
     private
 
     def read_index(at)
