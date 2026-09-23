@@ -1,14 +1,11 @@
 # Changelog
 
-## Unreleased
-
-- Convert supported static name-keyed CFF1 fonts to CID-keyed subsets for PDF embedding.
-
 ## 0.3.0 — 2026-09-23
 
 - Expose font bounds, glyph IDs, advances, and Unicode mappings for font consumers.
 - Build self-contained TrueType subsets with composite glyph dependencies and valid checksums.
 - Preserve complete CFF fonts when building PDF-compatible font data.
+- Convert supported static name-keyed CFF1 fonts to CID-keyed subsets for PDF embedding.
 
 ## 0.2.1 — 2026-09-21
 
